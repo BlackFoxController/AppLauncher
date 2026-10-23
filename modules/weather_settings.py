@@ -22,7 +22,7 @@ class WeatherSettingsDialog(QDialog):
         self.setModal(True)
         self.setFixedSize(self.scaling.scale(600), self.scaling.scale(632))
         
-        
+        # Stile identico al KeyRemapper
         self.setStyleSheet("""
             QDialog { 
                 background-color: #1a1a1a; 
@@ -274,7 +274,7 @@ class WeatherSettingsDialog(QDialog):
             )
             return
         
-        # Debug: controlla se launcher è valido
+        
         if not self.launcher:
             print("❌ ERROR: self.launcher is None!")
             QMessageBox.critical(
@@ -284,13 +284,13 @@ class WeatherSettingsDialog(QDialog):
             )
             return
         
-       
+        
         # Aggiorna config_data
         self.launcher.config_data['weather_city'] = city
         self.launcher.config_data['weather_country_code'] = country_code
         self.launcher.config_data['weather_units'] = units
         
-        # Applica la configurazione al widget PRESERVANDO LA VISIBILITÀ
+        
         if hasattr(self.launcher, 'weather_widget') and self.launcher.weather_widget:
             # Salva lo stato di visibilità corrente
             was_visible = self.launcher.weather_widget.isVisible()
@@ -441,7 +441,7 @@ class WeatherSettingsDialog(QDialog):
 
 
 def add_weather_settings_to_menu(settings_menu, launcher):
-   
+    
     from pathlib import Path
     from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel
     from PyQt6.QtCore import Qt
@@ -552,13 +552,14 @@ def add_weather_settings_to_menu(settings_menu, launcher):
     container.mousePressEvent = _mouse_press
     container.setCursor(Qt.CursorShape.PointingHandCursor)
 
+    
     def _on_enter_press():
         """Callback chiamato quando si preme Enter sul container"""
         current_launcher = settings_menu.launcher
         if current_launcher:
             _open_weather_settings(current_launcher, scaling, settings_menu)
     
-    
+    # Collega il callback al container per la gestione Enter
     container._on_enter_press = _on_enter_press
     
     container._refresh_toggle = lambda: toggle.setChecked(_read_state())

@@ -44,7 +44,7 @@ class ResetDialog(QDialog):
             self.scaling.scale(30)
         )
         
-        # === CREA IL BUTTON GROUP ===
+        #  CREA IL BUTTON GROUP 
         self.button_group = QButtonGroup(self)
         
         # Titolo
@@ -76,7 +76,7 @@ class ResetDialog(QDialog):
         
         layout.addSpacing(self.scaling.scale(20))
         
-        # === OPZIONE 1: SOFT RESET ===
+        
         soft_container = self._create_option_container(
             "Soft Reset",
             "Reset only settings to default",
@@ -93,7 +93,7 @@ class ResetDialog(QDialog):
         # Aggiungi al gruppo
         self.button_group.addButton(soft_container.radio)
         
-        # === OPZIONE 2: FULL RESET ===
+        
         full_container = self._create_option_container(
             "Full Reset",
             "Delete EVERYTHING (factory reset)",
@@ -182,7 +182,7 @@ class ResetDialog(QDialog):
     def _create_option_container(self, title, description, details, option_type):
         """Crea un container per un'opzione di reset"""
         container = QWidget()
-        container.setObjectName("resetContainer")  
+        container.setObjectName("resetContainer")  # Per identificarlo
         
         # Sfondo e bordo distintivi
         bg_color = "#2a2a2a" if option_type == "soft" else "#3a2020"
@@ -464,6 +464,7 @@ class SettingsMenu(QWidget):
         self.config = {
             'show_clock': True,
             'sound_effects': False,
+            'show_weather': False,
             'fullscreen': True,
             'tile_glow': True,
             'auto_change_wallpaper': False,
@@ -477,7 +478,7 @@ class SettingsMenu(QWidget):
         """Inizializza UI con stile coerente"""
         self.setFixedWidth(self.scaling.scale(420))
         
-        # Stile principale coerente con program_scanner
+        
         self.setStyleSheet("""
             QWidget {
                 background-color: #1a1a1a;
@@ -493,7 +494,7 @@ class SettingsMenu(QWidget):
         header = self._create_header()
         main_layout.addWidget(header)
         
-        # SCROLLABLE CONTENT
+        
         scroll = self._create_scroll_area()
         content = self._create_content()
         scroll.setWidget(content)
@@ -604,7 +605,7 @@ class SettingsMenu(QWidget):
         )
         layout.setSpacing(self.scaling.scale(15))
         
-        # ACTIONS 
+        #  ACTIONS 
         self._add_section_title(layout, "Quick Actions")
         
         icon_dir = Path("assets/icons")
@@ -651,7 +652,7 @@ class SettingsMenu(QWidget):
         self.menu_items.append(self.update_available_btn)
 
         
-        #  APPEARANCE  
+        # APPEARANCE 
         layout.addSpacing(self.scaling.scale(20))
         self._add_section_title(layout, "Appearance")
         manage_cat_btn = self._create_menu_button(
@@ -663,7 +664,7 @@ class SettingsMenu(QWidget):
         layout.addWidget(manage_cat_btn)
         self.menu_items.append(manage_cat_btn)
 
-        
+        # Toggle Show Clock 
         self.clock_toggle = self._create_toggle(
             "Show Clock",
             "Display time and date in header",
@@ -696,7 +697,7 @@ class SettingsMenu(QWidget):
         layout.addWidget(self.carousel_position_slider)
         self.menu_items.append(self.carousel_position_slider)
 
-        # Weather 
+        # Weather Settings  (con toggle ON/OFF integrato)
         self.weather_btn = add_weather_settings_to_menu(self, self.launcher)
         layout.addWidget(self.weather_btn)
         self.menu_items.append(self.weather_btn)
@@ -725,7 +726,7 @@ class SettingsMenu(QWidget):
         )
         layout.addWidget(self.fullscreen_toggle)
         self.menu_items.append(self.fullscreen_toggle)
-
+        
         # Toggle per auto-cambio wallpaper
         self.wallpaper_toggle = self._create_toggle(
             "Auto-change Wallpaper",
@@ -736,7 +737,7 @@ class SettingsMenu(QWidget):
         )
         layout.addWidget(self.wallpaper_toggle)
         self.menu_items.append(self.wallpaper_toggle)
-        
+
         # ADVANCED 
         layout.addSpacing(self.scaling.scale(20))
         self._add_section_title(layout, "Advanced")
@@ -789,16 +790,15 @@ class SettingsMenu(QWidget):
 
         self.parental_control_btn = self._create_menu_button(
             "Parental Control",
-            "Not configured",                    # valore iniziale
+            "Not configured",
             self._handle_parental_control,
             icon_dir / "lock.png"
         )
 
-        # Salviamo i riferimenti ai QLabel per poter aggiornare facilmente solo la descrizione
+        # Salviamo i riferimenti ai QLabel per aggiornare facilmente solo la descrizione
         self._parental_title_label = None
         self._parental_desc_label = None
 
-        # Cerchiamo i due QLabel all'interno del pulsante
         for child in self.parental_control_btn.findChildren(QLabel):
             style = child.styleSheet()
             if "font-weight: bold" in style or "font-size" in style and "14px" in style:
@@ -808,7 +808,6 @@ class SettingsMenu(QWidget):
 
         layout.addWidget(self.parental_control_btn)
         self.menu_items.append(self.parental_control_btn)
-        
 
         config_files_btn = self._create_menu_button(
             "Config Files",
@@ -819,7 +818,7 @@ class SettingsMenu(QWidget):
         layout.addWidget(config_files_btn)
         self.menu_items.append(config_files_btn)
         
-        # INFO 
+        # INFO SECTION 
         layout.addSpacing(self.scaling.scale(20))
         self._add_section_title(layout, "Information")
         
@@ -833,13 +832,6 @@ class SettingsMenu(QWidget):
         
         return content
 
-    def _handle_wallpaper_toggle(self, enabled):
-        """Gestisce il toggle del cambio automatico wallpaper"""
-        self.config['auto_change_wallpaper'] = enabled
-        if self.launcher:
-            self.launcher.toggle_wallpaper_rotation(enabled)
-        self.config_changed.emit(self.config)
-        
     def _create_effect_selector(self, title, description, default_value, icon_path=None):
         """Selettore con radio buttons per gli effetti tile"""
         container = QWidget()
@@ -863,7 +855,7 @@ class SettingsMenu(QWidget):
             self.scaling.scale(10)
         )
         
-        
+        #  HEADER (Icona + Titolo + Descrizione) 
         header_layout = QHBoxLayout()
         header_layout.setSpacing(self.scaling.scale(12))
         
@@ -913,10 +905,10 @@ class SettingsMenu(QWidget):
         
         main_layout.addLayout(header_layout)
         
-        #  RADIO 
+        
         radio_layout = QVBoxLayout()
         radio_layout.setSpacing(self.scaling.scale(5))
-        radio_layout.setContentsMargins(self.scaling.scale(45), 0, 0, 0) 
+        radio_layout.setContentsMargins(self.scaling.scale(45), 0, 0, 0)  # Indent
         
         effects = [
             ("None", "none", "No animation"),
@@ -1031,10 +1023,10 @@ class SettingsMenu(QWidget):
         )
         btn_layout.setSpacing(self.scaling.scale(12))
         
-        
+        # ICONA 
         if icon_path and Path(icon_path).exists():
             icon_label = QLabel()
-            pixmap = QPixmap(str(icon_path))  
+            pixmap = QPixmap(str(icon_path))  # ← Converti in stringa qui
             if not pixmap.isNull():
                 scaled_pixmap = pixmap.scaled(
                     self.scaling.scale(40), 
@@ -1048,7 +1040,7 @@ class SettingsMenu(QWidget):
                 btn_layout.addWidget(icon_label)
                 
         
-        # TESTO 
+        # === TESTO ===
         text_layout = QVBoxLayout()
         text_layout.setSpacing(self.scaling.scale(5))
         
@@ -1261,10 +1253,10 @@ class SettingsMenu(QWidget):
         value_font.setBold(True)
         value_label.setFont(value_font)
         # Larghezza fissa calcolata sulla stringa più larga possibile
-        # ("100%") con il font effettivo, non un valore arbitrario: cosi la
-        # label non cambia mai dimensione passando da 1-2-3 a 4 caratteri
-        # senza però riservare più spazio del necessario (che altrimenti fa
-        # uscire il contenitore dall'area visibile).
+        # ("100%") con il font effettivo, cosi la label non cambia mai
+        # dimensione passando da 1-2-3 a 4 caratteri senza però riservare
+        # più spazio del necessario (che altrimenti fa uscire il
+        # contenitore dall'area visibile).
         widest_text = f"100{value_suffix}"
         value_label.setFixedWidth(
             QFontMetrics(value_font).horizontalAdvance(widest_text) + self.scaling.scale(2)
@@ -1376,7 +1368,7 @@ class SettingsMenu(QWidget):
         info_layout = QVBoxLayout(info_widget)
         info_layout.setSpacing(self.scaling.scale(8))
 
-        # Pulsante Check for Updates con icona GitHub
+        
         update_btn = QPushButton("  View on GitHub")
         update_btn.setFixedHeight(self.scaling.scale(50))
         update_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -1426,8 +1418,17 @@ class SettingsMenu(QWidget):
         info_widget.update_btn = update_btn
         return info_widget
         
-    # ===== HANDLERS =====
-    
+    # HANDLERS 
+
+    def _handle_wallpaper_toggle(self, enabled):
+        """Gestisce il toggle del cambio automatico wallpaper"""
+        self.config['auto_change_wallpaper'] = enabled
+        if self.launcher:
+            self.launcher.config_data['auto_change_wallpaper'] = enabled
+            self.launcher.save_config()
+            self.launcher.toggle_wallpaper_rotation(enabled)
+        self.config_changed.emit(self.config)
+        
     def _handle_api_key(self):
         if not self.launcher:
             return
@@ -1465,7 +1466,7 @@ class SettingsMenu(QWidget):
         
         try:
             webbrowser.open(github_url)
-            
+            print(f"🌐 Opening GitHub: {github_url}")
         except Exception as e:
             print(f"❌ Error opening browser: {e}")
             QMessageBox.warning(
@@ -1492,7 +1493,6 @@ class SettingsMenu(QWidget):
             latest_tag  = update_info.get('latest_tag', '')
             release_url = update_info.get('release_url', '')
             current_ver = update_info.get('current_version', '')
-            # Aggiorna il sottotesto con le versioni 
             self._update_btn_desc(
                 self.update_available_btn,
                 f"v{current_ver.lstrip('vV')}  ->  {latest_tag}  |  Click to download"
@@ -1503,7 +1503,7 @@ class SettingsMenu(QWidget):
             self.update_available_btn.setVisible(False)
 
     def _update_btn_desc(self, btn, new_desc):
-        """Aggiorna la QLabel descrizione dentro un pulsante creato con _create_menu_button"""
+        """Aggiorna la QLabel descrizione dentro un pulsante _create_menu_button"""
         btn_layout = btn.layout()
         if not btn_layout:
             return
@@ -1533,13 +1533,17 @@ class SettingsMenu(QWidget):
             
             if key == 'show_clock':
                 self.launcher.toggle_clock_visibility(value)
-
+            elif key == 'show_weather':
+                if hasattr(self.launcher, 'weather_widget') and self.launcher.weather_widget:
+                    self.launcher.weather_widget.setVisible(value)
+                elif hasattr(self.launcher, 'toggle_weather_visibility'):
+                    self.launcher.toggle_weather_visibility(value)
             elif key == 'sound_effects':
                 self.launcher.sound_manager.set_enabled(value)
                 if value:
                     self.launcher.sound_manager.select()
             elif key == 'tile_glow':
-                # Ferma TUTTI i glow esistenti 
+               
                 if hasattr(self.launcher, 'tiles'):
                     for tile in self.launcher.tiles:
                         if hasattr(tile, 'glow_effect') and tile.glow_effect:
@@ -1561,7 +1565,7 @@ class SettingsMenu(QWidget):
                             tile.glow_effect = None
                 
                 
-                # Questo riattiva il glow senza ricostruire tutto il carosello
+                
                 if hasattr(self.launcher, 'tiles') and hasattr(self.launcher, 'current_index'):
                     for i, tile in enumerate(self.launcher.tiles):
                         is_focused = (tile.app_index == self.launcher.current_index)
@@ -1591,7 +1595,7 @@ class SettingsMenu(QWidget):
                 # launcher chdir's into its install folder at startup, so a
                 # bare Path("key_mappings.json") here would point at a
                 # different file than the one the live KeyMapper reads from
-                # (%APPDATA%\TVLauncher\key_mappings.json on Windows).
+                # (~/.config/TVLauncher/key_mappings.json on Linux).
                 key_mappings_data = None
                 key_mappings_file = getattr(
                     getattr(self.launcher, 'key_mapper', None), 'config_file', None
@@ -1622,7 +1626,7 @@ class SettingsMenu(QWidget):
                     complete_config['weather_country_code'] = self.launcher.config_data.get('weather_country_code', 'IT')
                     complete_config['weather_units'] = self.launcher.config_data.get('weather_units', 'metric')
                 
-                
+                #
                 if hasattr(self.launcher, 'background_manager') and self.launcher.background_manager is not None:
                     bg_config = self.launcher.background_manager.get_config()
                     complete_config.update(bg_config)
@@ -1695,7 +1699,7 @@ class SettingsMenu(QWidget):
                 f"⚠️ Current data will be OVERWRITTEN!\n\n"
                 f"Continue?"
             ):
-                # STEP 1: Pulisci tiles esistenti PRIMA del restore
+                # Pulisci tiles esistenti PRIMA del restore
                 if hasattr(self.launcher, 'tiles'):
                     for tile in self.launcher.tiles:
                         if hasattr(tile, 'glow_effect') and tile.glow_effect:
@@ -1717,7 +1721,7 @@ class SettingsMenu(QWidget):
                         tile.deleteLater()
                     self.launcher.tiles.clear()
                 
-                # STEP 2: Ripristina TUTTO
+                # Ripristina TUTTO
                 self.launcher.apps = imported_config.get('apps', [])
                 
                 if hasattr(self.launcher, 'background_manager') and self.launcher.background_manager is not None:
@@ -1749,8 +1753,8 @@ class SettingsMenu(QWidget):
                     # Reload mappings
                     if hasattr(self.launcher, 'key_mapper'):
                         self.launcher.key_mapper.load_mappings()
-            
-                # STEP 3: Aggiorna config_data
+                
+                # Aggiorna config_data
                 self.launcher.config_data = {
                     'apps': self.launcher.apps,
                     'steamgriddb_api_key': self.launcher.steamgriddb_api_key,
@@ -1788,30 +1792,30 @@ class SettingsMenu(QWidget):
                     self.launcher.config_data['video_wallpaper'] = self.launcher.video_wallpaper_manager.get_config()
                 else:
                     self.launcher.config_data['video_wallpaper'] = imported_config.get('video_wallpaper', {})
-            
-                # STEP 4: Reset index e backup categorie
+                
+                # Reset index e backup categorie
                 self.launcher.current_index = 0
                 
                 # Rimuovi backup se esiste
                 if hasattr(self.launcher, '_all_apps_backup'):
                     delattr(self.launcher, '_all_apps_backup')
                 
-                # STEP 5: Salva su disco
+                # Salva su disco
                 self.launcher.save_config()
                 
-                # STEP 6: Aggiorna UI
+                # Aggiorna UI
                 self.launcher.update_background()
                 
                 # Aggiorna ImageManager con nuova API key
                 self.launcher.image_manager.api_key = self.launcher.steamgriddb_api_key
                 
-                # STEP 7: Ricostruisci carousel 
+                
                 self.launcher.build_infinite_carousel()
                 
-                # STEP 8: Sincronizza toggle nel menu settings
+                # Sincronizza toggle nel menu settings
                 self._sync_toggles_from_config(self.launcher.config_data)
                 
-                
+                # Aggiorna anche il toggle del weather widget
                 if hasattr(self, 'weather_btn') and hasattr(self.weather_btn, '_refresh_toggle'):
                     self.weather_btn._refresh_toggle()
                 
@@ -1833,7 +1837,8 @@ class SettingsMenu(QWidget):
             )
         except Exception as e:
             self._show_error_dialog("Restore Failed", f"Failed to import configuration:\n\n{str(e)}")
-                
+
+
     def _handle_open_config_folder(self):
         """Apre la cartella di configurazione nel file manager"""
         import platform
@@ -1857,7 +1862,7 @@ class SettingsMenu(QWidget):
             else:
                 subprocess.Popen(["xdg-open", str(config_dir)])
         except Exception as e:
-            self._show_error_dialog("Error", f"Cannot open folder:\n{config_dir}\n\n{e}")
+            self._show_error_dialog("Error", f"Cannot open folder:\n{config_dir}\n\n{e}")     
 
     def _handle_reset(self):
         """Mostra dialog per scegliere tipo di reset"""
@@ -1870,6 +1875,40 @@ class SettingsMenu(QWidget):
                 self._do_soft_reset()
             elif reset_type == "full":
                 self._do_full_reset()
+
+    def _handle_parental_control(self):
+        """Apre le impostazioni Parental Control. Integra il modulo se non ancora fatto."""
+        if not self.launcher:
+            return
+
+        # Se il manager non è ancora stato attaccato al launcher, inizializzalo ora
+        if not hasattr(self.launcher, "parental_control"):
+            integrate_parental_control(self.launcher)
+
+        # Delega tutta la logica (verifica PIN, menu opzioni, setup) al modulo
+        self.launcher.open_parental_control_settings()
+
+        # Aggiorna la descrizione del pulsante con il nuovo stato
+        self._refresh_parental_control_btn()
+
+    def _refresh_parental_control_btn(self):
+        """Aggiorna solo il testo descrittivo del pulsante Parental Control"""
+        if not hasattr(self, 'parental_control_btn') or not self._parental_desc_label:
+            return
+
+        if not self.launcher or not hasattr(self.launcher, "parental_control"):
+            new_status = "Not configured"
+        else:
+            pc = self.launcher.parental_control
+            if hasattr(pc, "get_status_text"):
+                new_status = pc.get_status_text()
+            elif getattr(pc, "is_configured", False):
+                new_status = "Active" if getattr(pc, "is_enabled", False) else "Inactive — disabled"
+            else:
+                new_status = "Not configured"
+
+        # Aggiorna solo la descrizione (secondo label)
+        self._parental_desc_label.setText(new_status)
 
     def _do_soft_reset(self):
         """Reset solo impostazioni (mantiene apps, background, API key)"""
@@ -1891,7 +1930,7 @@ class SettingsMenu(QWidget):
                 'sound_effects': False,
                 'fullscreen': True,
                 'carousel_vertical_position': 50,
-                
+
             }
             
             # Aggiorna solo i settings, non tocca apps/background/api
@@ -1941,7 +1980,7 @@ class SettingsMenu(QWidget):
         ):
             return
         
-        
+        #  Ferma e pulisci TUTTI gli effetti glow esistenti
         if hasattr(self.launcher, 'tiles'):
             for tile in self.launcher.tiles:
                 if hasattr(tile, 'glow_effect') and tile.glow_effect:
@@ -1958,14 +1997,14 @@ class SettingsMenu(QWidget):
                     except:
                         pass
         
-        # STEP 2: Cancella tutte le tiles esistenti
+        #  Cancella tutte le tiles esistenti
         if hasattr(self.launcher, 'tiles'):
             for tile in self.launcher.tiles:
                 tile.setParent(None)
                 tile.deleteLater()
             self.launcher.tiles.clear()
         
-        # STEP 3: Reset COMPLETO 
+        # Reset COMPLETO (codice originale che funzionava)
         default_config = {
             'apps': [],
             'background': '',
@@ -1990,7 +2029,7 @@ class SettingsMenu(QWidget):
         if hasattr(self.launcher, 'key_mapper'):
             self.launcher.key_mapper.load_mappings()
         
-        #Rimuovi backup PRIMA di resettare apps
+        # Rimuovi backup PRIMA di resettare apps
         if hasattr(self.launcher, '_all_apps_backup'):
             delattr(self.launcher, '_all_apps_backup')
         
@@ -2013,10 +2052,10 @@ class SettingsMenu(QWidget):
         self.launcher.config_data = default_config
         self.launcher.current_index = 0
         
-        # 
+       
         self.launcher.save_config()
         
-      
+        
         self.launcher.update_background()
         
         # Aggiorna ImageManager
@@ -2093,21 +2132,11 @@ class SettingsMenu(QWidget):
             
             if dialog.exec() == QDialog.DialogCode.Accepted:
                 self.launcher.save_config()
-
-                # Ricostruisce subito la barra delle categorie (i QLabel
-                # venivano creati solo all'avvio e mai piu' aggiornati,
-                # causando sia un IndexError dopo un delete sia rename
-                # che sembravano "non salvarsi" finche' non si riavviava).
-                if hasattr(self.launcher, 'category_selector'):
-                    try:
-                        self.launcher.category_selector.rebuild()
-                    except Exception as e:
-                        print(f"⚠️ Could not rebuild category selector: {e}")
-
+                
                 # Usa il metodo helper già esistente per il messaggio di successo
                 self._show_success_dialog(
                     "Changes Saved",
-                    "Categories updated!"
+                    "Categories updated!\n\nRestart the launcher to see all changes."
                 )
             
             self.launcher.setFocus()
@@ -2138,8 +2167,8 @@ class SettingsMenu(QWidget):
                 
                 
             elif system == "Linux":
-                
-                
+                #  SU LINUX: Minimizza il launcher PRIMA di aprire le impostazioni
+                # perché i window manager Linux mostrano le nuove finestre sotto quelle fullscreen
                 if self.launcher:
                     print("🔽 Minimizing launcher (Linux) before opening network settings")
                     self.launcher.showMinimized()
@@ -2162,7 +2191,7 @@ class SettingsMenu(QWidget):
                 for cmd in network_managers:
                     try:
                         subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                        
+                        print(f"🌐 Network settings opened (Linux - {cmd[0]})")
                         opened = True
                         break
                     except FileNotFoundError:
@@ -2180,7 +2209,7 @@ class SettingsMenu(QWidget):
         except Exception as e:
             print(f"⚠️ Error opening network settings: {e}")
             
-            
+            #  RIPRISTINA IL LAUNCHER SE C'È UN ERRORE (solo su Linux)
             if platform.system() == "Linux" and self.launcher:
                 self.launcher.showNormal()
                 if self.launcher.config_data.get('fullscreen', True):
@@ -2193,40 +2222,6 @@ class SettingsMenu(QWidget):
                 f"Error: {str(e)}\n\n"
                 f"Please open network settings manually."
             )     
-
-    def _handle_parental_control(self):
-        """Apre le impostazioni Parental Control. Integra il modulo se non ancora fatto."""
-        if not self.launcher:
-            return
-
-        # Se il manager non è ancora stato attaccato al launcher, inizializzalo ora
-        if not hasattr(self.launcher, "parental_control"):
-            integrate_parental_control(self.launcher)
-
-        # Delega tutta la logica (verifica PIN, menu opzioni, setup) al modulo
-        self.launcher.open_parental_control_settings()
-
-        # Aggiorna la descrizione del pulsante con il nuovo stato
-        self._refresh_parental_control_btn()
-
-    def _refresh_parental_control_btn(self):
-        """Aggiorna solo il testo descrittivo del pulsante Parental Control"""
-        if not hasattr(self, 'parental_control_btn') or not self._parental_desc_label:
-            return
-
-        if not self.launcher or not hasattr(self.launcher, "parental_control"):
-            new_status = "Not configured"
-        else:
-            pc = self.launcher.parental_control
-            if hasattr(pc, "get_status_text"):
-                new_status = pc.get_status_text()
-            elif getattr(pc, "is_configured", False):
-                new_status = "Active" if getattr(pc, "is_enabled", False) else "Inactive — disabled"
-            else:
-                new_status = "Not configured"
-
-        # Aggiorna solo la descrizione (secondo label)
-        self._parental_desc_label.setText(new_status)
 
     def _open_key_remapper_dialog(self):
         """Apre effettivamente il dialog del key remapper"""
@@ -2258,7 +2253,7 @@ class SettingsMenu(QWidget):
         self.launcher.activateWindow()
 
         
-    #  PUBLIC METHODS 
+    # ===== PUBLIC METHODS =====
 
     def _sync_toggles_from_config(self, config):
         """Sincronizza i toggle con i valori della config"""
@@ -2270,6 +2265,7 @@ class SettingsMenu(QWidget):
         
         if hasattr(self, 'fullscreen_toggle') and hasattr(self.fullscreen_toggle, 'checkbox'):
             self.fullscreen_toggle.checkbox.setChecked(config.get('fullscreen', True))
+        
         
         if hasattr(self, 'glow_toggle') and hasattr(self.glow_toggle, 'checkbox'):
             self.glow_toggle.checkbox.setChecked(config.get('tile_glow', True))
@@ -2284,6 +2280,8 @@ class SettingsMenu(QWidget):
             self.carousel_position_slider.slider.blockSignals(False)
             self.carousel_position_slider.value_label.setText(f"{value}%")
 
+        if hasattr(self, 'weather_btn') and hasattr(self.weather_btn, '_refresh_toggle'):
+            self.weather_btn._refresh_toggle()
             
     def open_menu(self, launcher):
         """Apre menu SENZA ricreare content"""
@@ -2299,7 +2297,6 @@ class SettingsMenu(QWidget):
                 if key in launcher.config_data:
                     self.config[key] = launcher.config_data[key]
             self._sync_toggles_from_config(launcher.config_data)
-            # Aggiorna toggle weather (usa _refresh_toggle se disponibile)
             if hasattr(self, 'weather_btn') and hasattr(self.weather_btn, '_refresh_toggle'):
                 self.weather_btn._refresh_toggle()
         
@@ -2307,7 +2304,6 @@ class SettingsMenu(QWidget):
         if hasattr(launcher, 'apps'):
             self.apps_count_label.setText(f"Apps: {len(launcher.apps)}")
         self._refresh_update_button(launcher)
-        self._refresh_parental_control_btn()
         
         parent_rect = launcher.geometry()
         parent_width = parent_rect.width()
@@ -2335,7 +2331,7 @@ class SettingsMenu(QWidget):
         
     def close_menu(self):
         if hasattr(self.launcher, 'sound_manager'):
-            self.launcher.sound_manager.back()  # ← Indietro
+            self.launcher.sound_manager.back()  
             
         if not self.is_open:
             return
@@ -2496,7 +2492,7 @@ class SettingsMenu(QWidget):
         else:
             
             if hasattr(current_item, '_on_enter_press'):
-                
+                # Questo è il weather widget 
                 current_item._on_enter_press()
                 return
             
@@ -2536,11 +2532,11 @@ class SettingsMenu(QWidget):
         if not scroll_area:
             return
         
-        
+        # Calcola la posizione reale del widget (anche se annidato)
         item_y = 0
         widget = current_item
         
-        
+        # Risali la gerarchia dei widget fino al contenuto dello scroll area
         scroll_content = scroll_area.widget()
         while widget and widget != scroll_content:
             item_y += widget.y()
@@ -2573,9 +2569,9 @@ class SettingsMenu(QWidget):
             return
             
         key = event.key()
-        
+
         current_item = self.menu_items[self.current_index] if self.menu_items and 0 <= self.current_index < len(self.menu_items) else None
-        
+
         if key == Qt.Key.Key_Up:
             self.navigate_up()
         elif key == Qt.Key.Key_Down:
@@ -2591,7 +2587,7 @@ class SettingsMenu(QWidget):
         else:
             super().keyPressEvent(event)
 
-    #  DIALOG HELPER METHODS 
+    #  DIALOG HELPER 
 
     def _show_confirm_dialog(self, title, message):
         """Mostra un dialog di conferma stilizzato (Yes/No)"""
@@ -2615,7 +2611,7 @@ class SettingsMenu(QWidget):
             self.scaling.scale(30)
         )
         
-        # === HEADER CON TITOLO ===
+        #  HEADER CON TITOLO 
         header_widget = QWidget()
         header_widget.setStyleSheet(f"""
             QWidget {{
@@ -2806,7 +2802,7 @@ class SettingsMenu(QWidget):
         
         layout.addWidget(header_widget)
         
-       
+        #  MESSAGGIO IN RETTANGOLO 
         message_widget = QWidget()
         message_widget.setStyleSheet(f"""
             QWidget {{
@@ -2839,7 +2835,7 @@ class SettingsMenu(QWidget):
         layout.addWidget(message_widget)
         layout.addStretch()
         
-        # PULSANTE OK 
+        #  PULSANTE OK 
         ok_button = QPushButton("OK")
         ok_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         ok_button.clicked.connect(dialog.accept)
@@ -2899,7 +2895,7 @@ class SettingsMenu(QWidget):
             self.scaling.scale(30)
         )
         
-        
+        # HEADER CON TITOLO 
         header_widget = QWidget()
         header_widget.setStyleSheet(f"""
             QWidget {{

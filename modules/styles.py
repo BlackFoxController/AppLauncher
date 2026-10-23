@@ -1,17 +1,3 @@
-"""
-styles.py — TV Launcher Stylesheet Constants
-=============================================
-Tutte le stringhe CSS estratte da tvlauncher.py.
-Le costanti statiche (senza scaling) sono stringhe dirette.
-Le funzioni generano stili che dipendono da valori scalati a runtime.
-
-USO:
-    from modules.styles import Styles
-
-    widget.setStyleSheet(Styles.MSGBOX)
-    btn.setStyleSheet(Styles.menu_btn_normal(scale(2), scale(25), scale_font(24)))
-"""
-
 
 class Styles:
 
@@ -48,7 +34,7 @@ class Styles:
         )
 
     
-    # Settings button (⚙) — due varianti
+    # Settings button  
     
 
     @staticmethod
@@ -336,7 +322,7 @@ class Styles:
 
     
     # Confirm dialog (confirm_action / confirm_exit_launcher)
-    
+   
 
     @staticmethod
     def confirm_dialog(font_size_label: int, font_size_btn: int,

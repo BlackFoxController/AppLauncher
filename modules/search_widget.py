@@ -24,11 +24,7 @@ else:
 
 
 class QuickSearchWidget(QWidget):
-    """
-    Widget di ricerca rapida con filtraggio live delle app.
-    Supporta tastiera fisica e navigazione con joypad/telecomando.
-    UI uniformata con la palette del launcher principale.
-    """
+ 
     app_selected = pyqtSignal(int)  # Emette l'indice dell'app selezionata
     search_closed = pyqtSignal()    # Emette quando la ricerca viene chiusa
     

@@ -1,8 +1,3 @@
-"""
-Program Scanner Module
-Handles scanning installed programs and displaying them in a dialog
-"""
-
 import os
 import json
 import platform
@@ -530,14 +525,13 @@ class ProgramScanDialog(QDialog):
                     icon = provider.icon(file_info)
                     
                     if not icon.isNull():
-                        icon_size = self._s.scale(32)
-                        pixmap = icon.pixmap(icon_size, icon_size)
+                        pixmap = icon.pixmap(32, 32)
                         item.setIcon(QIcon(pixmap))
                 
                 item.setData(Qt.ItemDataRole.UserRole, data)
                 self.list_widget.addItem(item)
             
-            # Già ordinati, non serve ri-ordinare!
+            
             
             # FASE 2: Carica il resto in background se ci sono più di 10
             if len(cached_programs) > 10:
@@ -575,7 +569,7 @@ class ProgramScanDialog(QDialog):
         
         for _ in range(batch_size):
             if self.remaining_index >= len(self.remaining_queue):
-                
+                # Finito!
                 self.remaining_timer.stop()
                 
                 self.title_label.setText(f"Loaded {self.total_programs} programs from cache")
@@ -594,8 +588,7 @@ class ProgramScanDialog(QDialog):
                 icon = provider.icon(file_info)
                 
                 if not icon.isNull():
-                    icon_size = self._s.scale(32)
-                    pixmap = icon.pixmap(icon_size, icon_size)
+                    pixmap = icon.pixmap(32, 32)
                     item.setIcon(QIcon(pixmap))
             
             item.setData(Qt.ItemDataRole.UserRole, data)
@@ -639,9 +632,8 @@ class ProgramScanDialog(QDialog):
         item = QListWidgetItem(f"{data['name']}")
         
         if data.get('icon_pixmap') and not data['icon_pixmap'].isNull():
-            icon_size = self._s.scale(32)
             scaled_icon = data['icon_pixmap'].scaled(
-                icon_size, icon_size,
+                32, 32,
                 Qt.AspectRatioMode.KeepAspectRatio,
                 Qt.TransformationMode.SmoothTransformation
             )

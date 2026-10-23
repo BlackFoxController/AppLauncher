@@ -358,7 +358,7 @@ class ReorderMode:
         if button_index in (5, 10):  # RB button
             # Don't activate if dialog is open or in menu
             if self._is_dialog_active() or self.launcher.is_in_menu:
-                
+                #print("🚫 Reorder blocked - dialog or menu active")
                 return False
                 
             if not self.is_active:
@@ -373,15 +373,7 @@ class ReorderMode:
 
 
 def integrate_reorder_mode(launcher):
-    """
-    Integrates reorder mode into the launcher.
-    Call this from TVLauncher.__init__() after self.init_ui()
-    
-    Usage:
-        from app_reorder import integrate_reorder_mode
-        # In TVLauncher.__init__:
-        integrate_reorder_mode(self)
-    """
+   
     launcher.reorder_mode = ReorderMode(launcher)
     
     # Store original keyPressEvent
@@ -399,7 +391,7 @@ def integrate_reorder_mode(launcher):
         if key == Qt.Key.Key_R:
             # Don't activate if dialog is open or in menu
             if launcher.reorder_mode._is_dialog_active() or launcher.is_in_menu:
-                
+                #print("🚫 Reorder blocked - dialog or menu active")
                 original_key_press(event)
                 return
                 
@@ -476,7 +468,7 @@ def integrate_reorder_mode(launcher):
 
     def enhanced_handle_button(button_index):
         """Enhanced button handler with reorder support"""
-        # CRITICAL: Block all button handling during cooldown
+        #  Block all button handling during cooldown
         if launcher.reorder_mode.recently_exited:
             
             return
@@ -484,11 +476,11 @@ def integrate_reorder_mode(launcher):
         # In reorder mode, handle A and B buttons specially
         if launcher.reorder_mode.is_active:
             if button_index == 0:  # A button - confirm reorder
-                print("✅ A button pressed in reorder mode - confirming")
+                
                 launcher.reorder_mode.confirm_reorder()
                 return  # Don't pass to original handler
             elif button_index == 1:  # B button - cancel reorder
-                print("❌ B button pressed in reorder mode - canceling")
+                
                 launcher.reorder_mode.cancel_reorder()
                 return  # Don't pass to original handler
         

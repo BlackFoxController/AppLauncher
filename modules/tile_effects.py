@@ -31,7 +31,7 @@ class TileGlowEffect:
             __import__('PyQt6.QtCore', fromlist=['Qt']).Qt.WidgetAttribute.WA_TransparentForMouseEvents,
             True
         )
-        # Background scuro con border-radius — dà una superficie solida al DropShadow
+        
         overlay.setStyleSheet(f"""
             QWidget {{
                 background-color: #1a1a1a;

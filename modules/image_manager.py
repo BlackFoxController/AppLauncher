@@ -21,9 +21,9 @@ class ImageManager:
         self.assets_dir = Path(assets_dir)
         self.assets_dir.mkdir(exist_ok=True)
         self.api_key = api_key
-        # Se tiles_dir e' fornita (%APPDATA%\TVLauncher\tiles),
+        # Se tiles_dir e' fornita (es. AppData/Roaming/TVLauncher/tiles),
         # le immagini scaricate vengono salvate li' invece che dentro la
-        # cartella dell'app -- sopravvivono cosi' agli aggiornamenti.
+        # cartella dell'app — sopravvivono cosi' agli aggiornamenti.
         if tiles_dir is not None:
             self.tiles_dir = Path(tiles_dir)
             self.tiles_dir.mkdir(parents=True, exist_ok=True)
@@ -35,7 +35,7 @@ class ImageManager:
         Ottiene l'immagine per un'app.
         Cerca prima in tiles_dir (AppData), poi in locale, poi online se necessario.
         """
-        # 1. Cerca in tiles_dir (AppData) -- ha priorita', sopravvive agli update
+        # 1. Cerca in tiles_dir (AppData) — ha priorità, sopravvive agli update
         if self.tiles_dir:
             tile_image = self._find_tile_image(app_name)
             if tile_image:
@@ -56,7 +56,7 @@ class ImageManager:
         return app_path if app_path and os.path.exists(app_path) else None
     
     def _find_tile_image(self, app_name):
-        """Cerca immagine in tiles_dir (AppData) -- file flat, nome = safe_name"""
+        """Cerca immagine in tiles_dir (AppData) — file flat, nome = safe_name"""
         safe_name = self._sanitize_filename(app_name)
         for ext in ['.png', '.jpg', '.jpeg', '.webp']:
             image_path = self.tiles_dir / f"{safe_name}{ext}"
@@ -127,7 +127,7 @@ class ImageManager:
             ext = '.png' if 'png' in image_url.lower() else '.jpg'
 
             if self.tiles_dir:
-                # Salva in AppData\tiles\ come file flat -- sopravvive agli update
+                # Salva in AppData/tiles/ come file flat — sopravvive agli update
                 image_path = self.tiles_dir / f"{safe_name}{ext}"
             else:
                 # Fallback: vecchio comportamento con sottocartella in assets
