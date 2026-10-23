@@ -8,13 +8,6 @@ A sleek, console-style application launcher for Windows and Linux with gamepad s
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License">
 </p>
 
-
-<img width="1920" height="1080" alt="Screenshot (485)" src="https://github.com/user-attachments/assets/6cb447d9-5c21-4beb-9f15-e8aa3d2a13e9" />
-
-
-
-
-
 ## Features
 
 - **Full-screen TV-Mode** - Console-style carousel with smooth animations
@@ -35,24 +28,6 @@ A sleek, console-style application launcher for Windows and Linux with gamepad s
 
 ## Screenshots
 
-<img width="1920" height="1080" alt="Screenshot (483)" src="https://github.com/user-attachments/assets/a5acace8-5ab7-462a-9584-a9f6db3cad33" />
-
-*System Menu*
-
-<img width="1920" height="1080" alt="Screenshot (484)" src="https://github.com/user-attachments/assets/ba0fcca7-3907-4a26-b752-a46fb4449818" />
-
-*Key Mapper*
-
-<img width="1920" height="1080" alt="Screenshot (482)" src="https://github.com/user-attachments/assets/ca9dfbfb-8171-4063-af7c-07a1e82787f0" />
-
-*Parental Control*
-
-https://github.com/user-attachments/assets/c06e22da-7dd1-4599-bb2a-81425312517c
-
-*In motion*
-
-
-
 ### Input Support
 - **Gamepad Compatible** - Xbox, PlayStation, or any standard controller
 - **Keyboard Navigation** - Full keyboard support
@@ -66,8 +41,6 @@ https://github.com/user-attachments/assets/c06e22da-7dd1-4599-bb2a-81425312517c
   - Press Up/D-Pad Up to open category selector
   - Navigate categories with Left/Right or D-Pad
   - Quick category assignment with C (keyboard) or X/Square (controller)
-
-
 - **Category Manager** - Customize categories in Settings
    - Add, edit, or delete categories
    - Choose custom icons and colors
@@ -117,43 +90,10 @@ TV Launcher supports animated, streaming video wallpapers in the style of Projec
 - **Quick Actions** - Restart, Sleep, Shutdown, or Close launcher
 
 
-### New in Version 1.4.2
-
-- **Fixed**
-
-  - **Category Rename/Delete Not Updating Apps**
-     - Renaming a category no longer leaves apps pointing at the old name — every app tagged with it is now automatically re-pointed to the new name
-     - Deleting a category now actually moves its apps to "Other" as the confirmation dialog promises, instead of leaving them stuck under a category that no longer exists
-  - **Key Mappings Backup/Restore/Reset Using Wrong File**
-     - Backup (export), Restore (import), and "Reset to Defaults" now all read/write the same key mappings file the running Key Remapper actually uses
-     - Previously these three features reconstructed the file path independently and could silently target a different file than the live one (since the launcher changes its working directory to its install folder at startup), making restores appear to succeed while key mappings stayed unchanged, and resets appear to do nothing
-  - Removed a broken, unused code path in the Category Manager that referenced a function which didn't exist, and a similar leftover reference in the gamepad reorder-mode handler 
-  - Applies to both Windows and Linux builds
-
-           
-## Requirements
-
-- **Operating System:** Windows 10/11 or Linux (Ubuntu 20.04+, Fedora, Arch, etc.)
-- **Python:** 3.8 or higher
-- Video wallpapers rely on `libmpv` for playback.
-
-- **Windows:** `libmpv` (`mpv-2.dll`) is already bundled with the app — no setup needed.
-- **Linux:** `libmpv` must be installed at the system level (it's a native library, not a pip package). The installer (`installer.sh`) checks for it automatically and installs it via your package manager:
-```bash
-  # Debian/Ubuntu/Mint
-  sudo apt install libmpv2   # or libmpv1 on older versions
-
-  # Fedora
-  sudo dnf install mpv-libs
-
-  # Arch
-  sudo pacman -S mpv
-```
-  If you're not using the installer, you'll need to install it manually with one of the commands above.
-
-> ⚠️ Performance depends on your GPU's hardware video decode support (especially for HEVC/HDR content). Older hardware without HEVC decode acceleration may experience choppy playback in software decode mode.
-
 ### Dependencies
+Python, maybe libmpv 
+
+
 - `PyQt6` - UI framework
 - `psutil` - Process management
 - `pygame` - Gamepad support
@@ -165,88 +105,22 @@ TV Launcher supports animated, streaming video wallpapers in the style of Projec
 
 ## Installation
 
-### 1. Clone the Repository (branch 1 for Windows,branch 2 for Linux)
 ```bash
-git clone https://github.com/Darkvinx88/TvLauncher.git
-cd TvLauncher
+git clone ...
+
+# linux
+pip install -r requirements.txt
+
+# windows
+pip install -r requirements_win.txt
+
+python TvLauncher_[X/Windows/Linux].py
 ```
+
+## Configuration
+
+Configuration files in `%APPDATA%\Roaming\TVLauncher` on Windows and in `~/.config/TVLauncher` on Linux
  
-### 2. Create Virtual Environment and Install Dependencies
-
-**Windows:**
-```bash
-#Create Virtual environment:
-python -m venv venv
-
-#Activate Virtual environment:
-venv\Scripts\activate
-
-#Install dependencies:
-pip install -r requirements.txt
-
-#Run the launcher
-python TvLauncher_Windows.py
-
-#Alternatively you can just run the installer.bat and let it do everything for you
-#(creates a virtual environment,activates it,installs dependencies)
-#Once everything is installed simply run the launcher with the given TVLauncher.bat file
-#it will automatically activate the virtual environment and run the launcher with 1 click
-
-
-```
-
-**Linux:**
-```bash
-
-# Create virtual environment:
-python3 -m venv venv
-
-# Activate virtual environment:
-source venv/bin/activate
-
-# Install dependencies:
-pip install -r requirements.txt
-
-# Run the launcher 
-python3 TvLauncher_Linux.py
-
-#Alternatively you can just run the Installer.sh and let it do everything for you
-#(creates a virtual environment,activates it,installs dependencies)
-#Once everything is installed simply run the launcher with the given Launcher.sh file
-#it will automatically activate the virtual environment and run the launcher with 1 click
-
-#sh files are already executable but if they are not just do
-chmod +x installer.sh
-./installer.sh
-
-chmod +x launcher.sh
-./launcher.sh
-
-#you can also edit the given .desktop so you are able to run the launcher no matter where it is placed.
-
-```
-
-## Windows Portable Mode
-The Windows version is fully portable - simply press the .exe to start the launcher. You can move the entire folder anywhere.
-
-## Linux Portable Mode
-This version includes everything needed:
-- Python runtime
-- Environment and launcher.sh have launching permissions already baked in
-- All Python packages (PyQt6, pygame, requests, etc.)
-- Qt6 with XCB/Wayland support (if in trouble sudo apt install libxcb)
-
-Just extract and run:
-```bash
-# Extract
-TVLauncher Linux v1.2 Portable.tar.gz
-
-# Run
-./launcher.sh
-
-or edit the .desktop file
-```
-
 ## Controls
 
 ### Default Keyboard Controls
@@ -277,8 +151,6 @@ or edit the .desktop file
 | `RB/R1` | Toggle Reorder Mode |
 | `start` | Open Settings Menu |
 | `LT\L2+Dpad ↑/↓` | Volume up/down |
-
-
 
 
 **Customizing Controls**
@@ -386,80 +258,6 @@ All controls can be remapped! Here's how:
 - Works with both linear (≤5 apps) and circular (>5 apps) modes
 - Instructions overlay appears when active
 
-## Autostart Setup
-
-The Launcher can start at boot on both Windows and Linux
-
-### Windows Autostart
-
-**Method 1: Startup Folder (Recommended)**
-1. Press `Win + R` to open Run dialog
-2. Type `shell:startup` and press Enter
-3. Right-click your launcher `.bat` or `.exe` file → Create shortcut
-4. Drag the shortcut into the Startup folder
-5. Launcher will start automatically after login
-
-💡 **Tip:** Right-click shortcut → Properties → Set Run: `Minimized` to hide console window.
-
-**Method 2: Windows Registry**
-1. Create a file named `TVLauncher_Autostart.reg`
-2. Paste the following content:
-```reg
-Windows Registry Editor Version 5.00
-
-[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run]
-"TVLauncher"="\"C:\\path\\to\\launch.bat\""
-```
-3. Replace `C:\\path\\to\\launch.bat` with your actual path
-4. Double-click the `.reg` file to add the registry entry
-5. Launcher will start automatically on every boot
-
-### Linux Autostart
-
-Works with any desktop environment (XFCE, GNOME, KDE, Cinnamon, MATE, etc.)
-
-1. **Create autostart directory:**
-```bash
-mkdir -p ~/.config/autostart
-```
-
-2. **Create autostart file:**
-```bash
-nano ~/.config/autostart/TVLauncher.desktop
-```
-
-3. **Add this content:**
-```ini
-[Desktop Entry]
-Type=Application
-Name=TVLauncher
-Comment=Automatically start the TV Launcher on login
-Exec=/path/to/venv/bin/python /path/to/TvLauncher_Linux.py
-Path=/path/to/
-Terminal=false
-X-GNOME-Autostart-enabled=true
-```
-*Replace `/path/to/` with actual directory*
-
-4. **Make executable:**
-```bash
-chmod +x ~/.config/autostart/TVLauncher.desktop
-```
-
-Launcher will now start automatically on login.
-
-## Configuration
-
-Configuration files `launcher_apps.json, key_mappings.json, scanner_cache.json` and tile images are now stored in the user folder `%APPDATA%\Roaming\TVLauncher` on  
-Windows and  `~/.config/TVLauncher` on Linux, keeping user data separate from the application files and ensuring it survives updates.
-A shortcut to these folders is accessible using the given button in the settings menu.
-
-## Updating
-
-The launcher now checks for updates on startup and shows a notification in the bottom right corner which leads to the releases page of this repo.
-A persistent banner will also be present in the settings menu if an update is available and disappears when the update is done.
-
-
 
 ## 🛠️ Troubleshooting
 
@@ -535,11 +333,6 @@ sudo dnf install python3-qt6-qtmultimedia
 sudo pacman -S python-pyqt6-multimedia
 ```
 
-**Permission Denied:**
-```bash
-chmod +x TvLauncher_Linux.py
-```
-
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -554,24 +347,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [mpv](https://mpv.io/) / [libmpv](https://github.com/mpv-player/mpv) - Powers video wallpaper playback.
 - The bundled `mpv-2.dll` (Windows) is distributed under the **LGPLv2.1+** license; 
 - Community contributors and testers
-
-## Known Issues
-
-- **Windows:** Some executables may need administrator privileges
-- **All:** Background images should be high resolution (1920x1080+) for best results
-
-
-## 📧 Contact
-
-For issues, questions, or suggestions, please open an issue on GitHub.
-
----
-
-⭐ **Star this repo if you find it useful!**
-
-Made with ❤️ by Darkvinx88 
-<p align="center">
-  <a href='https://ko-fi.com/W7W41RFDX2' target='_blank'>
-    <img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' />
-  </a>
-</p>

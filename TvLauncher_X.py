@@ -1,5 +1,3 @@
-# from linux base
-
 import sys
 import json
 import subprocess
