@@ -1,12 +1,4 @@
-"""
-dialogs.py — TV Launcher Dialog Classes
-========================================
-Contiene tutti i dialog estratti da tvlauncher.py:
-  - ApiKeyDialog       : inserimento API key SteamGridDB
-  - SystemMenuDialog   : menu rapido restart/shutdown/close
-  - AddAppDialog       : aggiunta nuova app al launcher
-"""
-
+import platform
 from pathlib import Path
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout,
@@ -15,15 +7,18 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 
+IS_LINUX = platform.system() == "Linux"
+
 
 
 class ApiKeyDialog(QDialog):
     def __init__(self, current_key="", parent=None, scaling=None):
         super().__init__(parent)
         s = scaling
+        self._s = s
         self.setWindowTitle("SteamGridDB API Key")
         self.setModal(True)
-        self.setFixedSize(s.scale(600), s.scale(300))
+        self.setFixedSize(s.scale(600), s.scale(350))
         self.setStyleSheet(f"""
             QDialog {{ background-color: #1a1a1a; }}
             QLabel {{ color: white; font-size: {s.scale_font(14)}px; }}
@@ -45,63 +40,58 @@ class ApiKeyDialog(QDialog):
                 font-weight: bold; 
             }}
         """)
-        
+
         layout = QVBoxLayout()
         layout.setSpacing(s.scale(20))
         layout.setContentsMargins(s.scale(30), s.scale(30), s.scale(30), s.scale(30))
-        
-        # Title
+
         title = QLabel("🔑 SteamGridDB API Key")
         title.setStyleSheet(f"font-size: {s.scale_font(18)}px; font-weight: bold;")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
-        
-        # Info text
+
         info = QLabel(
             "To automatically download 16:9 images:\n\n"
             "1. Go to steamgriddb.com\n"
             "2. Create a free account\n"
             "3. Go to Preferences → API\n"
-            "4. Generate an API Key and paste it here"
+            "4. Generate a API Key and paste it here..."
         )
         info.setStyleSheet(f"color: #aaa; font-size: {s.scale_font(12)}px;")
         info.setWordWrap(True)
         layout.addWidget(info)
-        
-        # API Key input
+
         key_label = QLabel("API Key:")
         layout.addWidget(key_label)
-        
+
         self.key_input = QLineEdit()
         self.key_input.setText(current_key)
-        self.key_input.setPlaceholderText("Paste your API here . . .")
+        self.key_input.setPlaceholderText("Paste the API Key here...")
         layout.addWidget(self.key_input)
-        
+
         layout.addStretch()
-        
-        # Buttons
+
         button_layout = QHBoxLayout()
         button_layout.setSpacing(s.scale(15))
-        
+
         self.save_btn = QPushButton("Save")
         self.save_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.save_btn.clicked.connect(self.accept)
-        
+
         self.cancel_btn = QPushButton("Cancel")
         self.cancel_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.cancel_btn.clicked.connect(self.reject)
-        
+
         button_layout.addWidget(self.save_btn)
         button_layout.addWidget(self.cancel_btn)
-        
+
         layout.addLayout(button_layout)
         self.setLayout(layout)
-        
-        self._s = s
+
         self.confirm_buttons = [self.save_btn, self.cancel_btn]
         self.confirm_index = [0]
         self.update_confirm_focus()
-    
+
     def update_confirm_focus(self):
         s = self._s
         for i, btn in enumerate(self.confirm_buttons):
@@ -117,7 +107,7 @@ class ApiKeyDialog(QDialog):
                 }}
                 QPushButton:hover {{ background-color: #3a3a3a; }}
             """)
-    
+
     def keyPressEvent(self, event):
         if event.isAutoRepeat():
             return
@@ -134,21 +124,21 @@ class ApiKeyDialog(QDialog):
             self.reject()
         else:
             super().keyPressEvent(event)
-    
+
     def get_api_key(self):
         return self.key_input.text().strip()
 
 
-
+# SystemMenuDialog
 
 class SystemMenuDialog(QDialog):
     def __init__(self, parent=None, scaling=None):
         super().__init__(parent)
-        s = scaling
-        self._s = s
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setModal(True)
+        s = scaling
+        self._s = s
         parent_rect = parent.geometry()
         dialog_width = s.scale(250)
         dialog_height = s.scale(100)
@@ -203,7 +193,7 @@ class SystemMenuDialog(QDialog):
         dialog_layout.addWidget(main_widget)
         self.setLayout(dialog_layout)
         self.update_focus()
-   
+
     def update_focus(self):
         s = self._s
         for i, (action, btn) in enumerate(self.buttons):
@@ -230,7 +220,7 @@ class SystemMenuDialog(QDialog):
                     }}
                     QPushButton:hover {{ background-color: #3a3a3a; }}
                 """)
-   
+
     def keyPressEvent(self, event):
         if event.isAutoRepeat():
             return
@@ -252,12 +242,12 @@ class SystemMenuDialog(QDialog):
             self.reject()
         else:
             super().keyPressEvent(event)
-   
+
     def get_selected_action(self):
         return getattr(self, 'selected_action', 'close')
 
 
-
+# AddAppDialog
 
 class AddAppDialog(QDialog):
     def __init__(self, parent=None, scaling=None):
@@ -276,13 +266,13 @@ class AddAppDialog(QDialog):
         layout = QVBoxLayout()
         layout.setSpacing(s.scale(20))
         layout.setContentsMargins(s.scale(30), s.scale(30), s.scale(30), s.scale(30))
-        
+
         name_label = QLabel("App Name:")
         name_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout.addWidget(name_label)
         self.name_input = QLineEdit()
         layout.addWidget(self.name_input)
-        
+
         exe_label = QLabel("Executable Path:")
         exe_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout.addWidget(exe_label)
@@ -294,7 +284,7 @@ class AddAppDialog(QDialog):
         self.exe_button.clicked.connect(self.browse_exe)
         exe_container.addWidget(self.exe_button, 1)
         layout.addLayout(exe_container)
-        
+
         icon_label = QLabel("Icon Image (16:9 recommended):")
         icon_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout.addWidget(icon_label)
@@ -306,17 +296,17 @@ class AddAppDialog(QDialog):
         self.icon_button.clicked.connect(self.browse_icon)
         icon_container.addWidget(self.icon_button, 1)
         layout.addLayout(icon_container)
-        
+
         category_label = QLabel("Category:")
         category_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout.addWidget(category_label)
-        
+
         self.category_combo = QComboBox()
         if hasattr(parent, 'category_manager'):
             self.category_combo.addItems(parent.category_manager.get_category_names())
         else:
             self.category_combo.addItems(['Games', 'Media', 'Programs', 'Other'])
-        
+
         self.category_combo.setStyleSheet(f"""
             QComboBox {{
                 background-color: #2a2a2a;
@@ -334,14 +324,14 @@ class AddAppDialog(QDialog):
                 selection-background-color: #3a3a3a;
             }}
         """)
-        
+
         index = self.category_combo.findText('Other')
         if index >= 0:
             self.category_combo.setCurrentIndex(index)
-        
+
         layout.addWidget(self.category_combo)
         layout.addSpacing(s.scale(20))
-        
+
         button_layout = QHBoxLayout()
         button_layout.setSpacing(s.scale(15))
         self.ok_button = QPushButton("Add")
@@ -353,13 +343,13 @@ class AddAppDialog(QDialog):
         button_layout.addWidget(self.ok_button)
         button_layout.addWidget(self.cancel_button)
         layout.addLayout(button_layout)
-        
+
         self.setLayout(layout)
-        
+
         self.confirm_buttons = [self.ok_button, self.cancel_button]
         self.confirm_index = [0]
         self.update_confirm_focus()
-   
+
     def update_confirm_focus(self):
         s = self._s
         for i, btn in enumerate(self.confirm_buttons):
@@ -375,7 +365,7 @@ class AddAppDialog(QDialog):
                 }}
                 QPushButton:hover {{ background-color: #3a3a3a; }}
             """)
-   
+
     def keyPressEvent(self, event):
         if event.isAutoRepeat():
             return
@@ -392,23 +382,52 @@ class AddAppDialog(QDialog):
             self.reject()
         else:
             super().keyPressEvent(event)
-   
+
     def browse_exe(self):
-        file_path, _ = QFileDialog.getOpenFileName(
-            self, "Select Executable", "", "Executables (*.exe);;All Files (*.*)"
-        )
+        if IS_LINUX:
+            file_path, _ = QFileDialog.getOpenFileName(
+                self, "Select Application", "",
+                "All Supported (*.desktop *.sh *.AppImage *);;"
+                "Desktop Files (*.desktop);;"
+                "Shell Scripts (*.sh);;"
+                "AppImage (*.AppImage);;"
+                "All Files (*.*)"
+            )
+        else:
+            file_path, _ = QFileDialog.getOpenFileName(
+                self, "Select Executable", "", "Executables (*.exe);;All Files (*.*)"
+            )
+
         if file_path:
             self.exe_input.setText(file_path)
             if not self.name_input.text():
-                self.name_input.setText(Path(file_path).stem)
-   
+                if file_path.endswith('.desktop'):
+                    desktop_name = self._extract_desktop_name(file_path)
+                    if desktop_name:
+                        self.name_input.setText(desktop_name)
+                    else:
+                        self.name_input.setText(Path(file_path).stem)
+                else:
+                    self.name_input.setText(Path(file_path).stem)
+
+    def _extract_desktop_name(self, desktop_file):
+        """Estrae il nome dall'interno di un file .desktop"""
+        try:
+            with open(desktop_file, 'r', encoding='utf-8') as f:
+                for line in f:
+                    if line.startswith('Name='):
+                        return line.split('=', 1)[1].strip()
+        except Exception as e:
+            print(f"⚠️ Could not read desktop file: {e}")
+        return None
+
     def browse_icon(self):
         file_path, _ = QFileDialog.getOpenFileName(
             self, "Select Icon Image", "", "Images (*.png *.jpg *.jpeg *.bmp);;All Files (*.*)"
         )
         if file_path:
             self.icon_input.setText(file_path)
-   
+
     def get_app_data(self):
         return {
             'name': self.name_input.text(),

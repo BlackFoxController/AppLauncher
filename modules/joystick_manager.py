@@ -49,8 +49,6 @@ class JoystickManager:
         self._bottom_menu_last_y = (False, 0, False)
         self._carousel_last_x = (False, False, 0, False, False)
         self._carousel_last_y = (False, False, 0, False, False)
-        self._pc_last_state = (False, False, 0, False, False)
-        self._pc_last_x     = (False, False, 0, False, False)
         
         if JOYSTICK_AVAILABLE:
             pygame.init()
@@ -81,8 +79,7 @@ class JoystickManager:
                 print(f"🎮 Joystick connected: {self.joystick.get_name()}")
                 
                 # Imposta joystick nel volume manager
-                if hasattr(self.parent, 'volume_manager') and self.parent.volume_manager:
-                    self.parent.volume_manager.set_joystick(self.joystick)
+                
                 
                 # Avvia polling
                 self.joystick_timer = QTimer()
@@ -122,12 +119,20 @@ class JoystickManager:
                     self.joystick_timer = QTimer()
                     self.joystick_timer.timeout.connect(self.poll_joystick)
                     self.joystick_timer.start(12)
-                
-                if hasattr(self.parent, 'volume_manager') and self.parent.volume_manager:
-                    self.parent.volume_manager.set_joystick(self.joystick)
                     
             elif count == 0 and self.joystick is not None:
-                # Joystick disconnesso
+                #
+                try:
+                    _ = self.joystick.get_numaxes()
+                    # Se arriviamo qui, il joystick è ancora connesso
+                    # NON disconnettere
+                    print("False disconnect alarm - joystick still active")
+                    return
+                except:
+                    # Se la lettura fallisce, allora è davvero disconnesso
+                    pass
+                
+                # Joystick davvero disconnesso
                 print("🔌 Joystick disconnected")
                 
                 from modules.joystick_notification import show_joystick_disconnected
@@ -140,22 +145,34 @@ class JoystickManager:
                     self.joystick_timer.stop()
                     self.joystick_timer = None
                 
-                self.joystick.quit()
-                self.joystick = None
+                try:
+                    self.joystick.quit()
+                except:
+                    pass
                 
-                if hasattr(self.parent, 'volume_manager') and self.parent.volume_manager:
-                    self.parent.volume_manager.set_joystick(None)
+                self.joystick = None
                     
         except Exception as e:
             print(f"⚠️ Error during joystick detection: {e}")
+            
             if self.joystick is not None:
-                if self.joystick_timer:
-                    self.joystick_timer.stop()
-                    self.joystick_timer = None
-                self.joystick = None
+                try:
+                    _ = self.joystick.get_numaxes()
+                    # Se funziona, mantieni il joystick
+                    print("ℹ️ Joystick still accessible despite error")
+                    return
+                except:
+                    # Se non funziona, allora disconnetti
+                    if self.joystick_timer:
+                        self.joystick_timer.stop()
+                        self.joystick_timer = None
+                    try:
+                        self.joystick.quit()
+                    except:
+                        pass
+                    self.joystick = None
                 
-                if hasattr(self.parent, 'volume_manager') and self.parent.volume_manager:
-                    self.parent.volume_manager.set_joystick(None)
+                
     
     def poll_joystick(self):
         """Polling principale del joystick - distribuisce agli handler appropriati"""
@@ -163,62 +180,97 @@ class JoystickManager:
             return
         
         try:
-            # Controlla modalità volume 
-            if hasattr(self.parent, 'volume_manager') and \
-               self.parent.volume_manager and \
-               self.parent.volume_manager.volume_mode_active:
-                for event in pygame.event.get():
-                    pass  # Consuma eventi
-                return
-            
             # Consuma eventi pygame
             for event in pygame.event.get():
                 pass
             
-            # Verifica che il joystick sia ancora attivo
-            if not pygame.joystick.get_init() or pygame.joystick.get_count() == 0:
-                raise pygame.error("Joystick system not ready or no device")
+            # Verifica joystick PRIMA di usarlo
+            try:
+                _ = self.joystick.get_numaxes()
+            except (pygame.error, AttributeError):
+                raise pygame.error("Joystick disconnected")
             
-            # Distribuisci ai vari handler in ordine di priorità
+            # Controlla volume control PRIMA di tutto
+            try:
+                if self._handle_volume_control():
+                    return
+            except Exception as e:
+                print(f"⚠️ Volume control error: {e}")
+
             if self._handle_parental_control():
                 return
 
-            if self._handle_settings_menu():
-                return
+            # Distribuisci ai vari handler in ordine di priorità
+            try:
+                if self._handle_settings_menu():
+                    return
+            except Exception as e:
+                print(f"⚠️ Settings menu error: {e}")
             
             if not self.parent.inputs_enabled:
                 return
             
-            if self._handle_reorder_mode():
-                return
-            # Gestisci category selector se abilitato e aperto
-            if self._category_selector_enabled and \
-                hasattr(self.parent, 'is_in_category_selector') and \
-                self.parent.is_in_category_selector:
-                    self._handle_category_selector()
+            try:
+                if self._handle_reorder_mode():
                     return
+            except Exception as e:
+                print(f"⚠️ Reorder mode error: {e}")
+            
+            #  Proteggi il category selector
+            try:
+                if self._category_selector_enabled and \
+                    hasattr(self.parent, 'is_in_category_selector') and \
+                    self.parent.is_in_category_selector:
+                        self._handle_category_selector()
+                        return
+            except Exception as e:
+                print(f"⚠️ Category selector error: {e}")
+                # Disabilita il selector se continua a dare errori
+                self.parent.is_in_category_selector = False
 
-            if self._handle_exit_dialog():
-                return
+            try:
+                if self._handle_exit_dialog():
+                    return
+            except Exception as e:
+                print(f"⚠️ Exit dialog error: {e}")
             
-            if self._handle_quick_search():
-                return
+            try:
+                if self._handle_quick_search():
+                    return
+            except Exception as e:
+                print(f"⚠️ Quick search error: {e}")
             
-            if self._handle_category_dialog():
-                return
+            try:
+                if self._handle_category_dialog():
+                    return
+            except Exception as e:
+                print(f"⚠️ Category dialog error: {e}")
             
-            if self._handle_bottom_menu():
-                return
+            try:
+                if self._handle_bottom_menu():
+                    return
+            except Exception as e:
+                print(f"⚠️ Bottom menu error: {e}")
             
             # Handler principale del carousel
-            self._handle_carousel_navigation()
-            self._handle_main_buttons()
+            try:
+                self._handle_carousel_navigation()
+                self._handle_main_buttons()
+            except Exception as e:
+                print(f"⚠️ Carousel/buttons error: {e}")
             
         except (pygame.error, AttributeError, ValueError) as e:
-            print(f"⚠️ Joystick connection lost: {e}")
-            self._handle_disconnection()
+            # Solo disconnetti se è un VERO errore di disconnessione
+            error_msg = str(e).lower()
+            if "joystick" in error_msg or "device" in error_msg or "disconnected" in error_msg:
+                print(f"⚠️ Joystick connection lost: {e}")
+                self._handle_disconnection()
+            else:
+                print(f"⚠️ Temporary error (ignored): {e}")
         except Exception as e:
-            print(f"⚠️ Unexpected error in joystick polling: {e}")
+            print(f"⚠️ Unexpected error in poll_joystick: {e}")
+            import traceback
+            traceback.print_exc()
     
     def _handle_parental_control(self):
         """Gestisce input joystick quando un dialog del parental control è attivo.
@@ -276,8 +328,8 @@ class JoystickManager:
                 elif i in (1, 2):
                     self._simulate_key(Qt.Key.Key_Escape)
 
-        return True  # Blocca tutti gli altri handler
-
+        return True  # Blocca tutti gli altri handler 
+        
     def _handle_settings_menu(self):
         """Gestisce navigazione nel settings menu"""
         if not (hasattr(self.parent, 'settings_menu') and 
@@ -503,7 +555,7 @@ class JoystickManager:
         (dpad_up and not self._bottom_menu_last_y[2]):
             self._simulate_key(Qt.Key.Key_Up)
             
-            # Forza lo stato UP per evitare riapertura category selector
+            
             self._category_open_last_y = (
                 True if (y_axis < -self.axis_deadzone or dpad_up) else False,
                 hat_y if hat_y != 0 else 0,
@@ -520,7 +572,7 @@ class JoystickManager:
                 elif i in (1, 2):
                     self._simulate_key(Qt.Key.Key_Up)
                     
-                    # Forza stato anche per pulsante B
+                    
                     y_axis = self.joystick.get_axis(1)
                     hat = self.joystick.get_hat(0) if self.joystick.get_numhats() > 0 else (0, 0)
                     dpad_up = self.joystick.get_button(11) if self.joystick.get_numbuttons() > 11 else False
@@ -536,7 +588,7 @@ class JoystickManager:
     def _handle_carousel_navigation(self):
         """Gestisce navigazione nel carousel principale"""
         
-        # Controlla se UP deve aprire category selector
+        
         if self._category_selector_enabled and \
         not self.parent.is_in_menu and \
         not getattr(self.parent, 'reorder_active', False):
@@ -553,11 +605,30 @@ class JoystickManager:
             
             # Aggiungi cooldown per D-PAD UP (button 11)
             if moved_up and self._check_button_cooldown(11, cooldown_ms=250):
-                self.parent.sound_manager.navigate()
-                self.parent.is_in_category_selector = True
-                self.parent.category_selector.show_animated()
-                self._category_open_last_y = current_state_y_up
-                return
+                try:
+                    # Verifica che category_selector esista
+                    if not hasattr(self.parent, 'category_selector'):
+                        print("⚠️ Category selector not initialized")
+                        self._category_open_last_y = current_state_y_up
+                        return
+                    
+                    # Verifica che sound_manager esista
+                    if hasattr(self.parent, 'sound_manager'):
+                        self.parent.sound_manager.navigate()
+                    
+                    self.parent.is_in_category_selector = True
+                    self.parent.category_selector.show_animated()
+                    self._category_open_last_y = current_state_y_up
+                    
+                    
+                    return
+                    
+                except Exception as e:
+                    
+                    print(f"⚠️ Error opening category selector: {e}")
+                    self._category_open_last_y = current_state_y_up
+                    
+                    return
             
             self._category_open_last_y = current_state_y_up
         
@@ -610,69 +681,89 @@ class JoystickManager:
         self._carousel_last_y = current_state_y
 
     def _handle_category_selector(self):
-        """Gestisce input joystick nel category selector"""
-        # Navigazione ORIZZONTALE (LEFT/RIGHT cambia categoria)
-        x_axis = self.joystick.get_axis(0)
-        y_axis = self.joystick.get_axis(1)
-        hat = self.joystick.get_hat(0) if self.joystick.get_numhats() > 0 else (0, 0)
-        
-        dpad_left = self.joystick.get_button(13)
-        dpad_right = self.joystick.get_button(14)
-        dpad_down = self.joystick.get_button(12)
-        
-        # Gestisce LEFT/RIGHT per cambiare categoria
-        current_state_x = (x_axis > self.axis_deadzone, x_axis < -self.axis_deadzone,
-                        hat[0], dpad_right, dpad_left)
-        
-        moved_right = (x_axis > self.axis_deadzone and not self._category_selector_last_x[0]) or \
-                    (hat[0] == 1 and self._category_selector_last_x[2] != 1) or \
-                    (dpad_right and not self._category_selector_last_x[3])
-        
-        moved_left = (x_axis < -self.axis_deadzone and not self._category_selector_last_x[1]) or \
-                    (hat[0] == -1 and self._category_selector_last_x[2] != -1) or \
-                    (dpad_left and not self._category_selector_last_x[4])
-        
-        if moved_right:
-            self.parent.sound_manager.navigate()
-            self.parent.category_selector.navigate_right()
-        elif moved_left:
-            self.parent.sound_manager.navigate()
-            self.parent.category_selector.navigate_left()
-        
-        self._category_selector_last_x = current_state_x
-        
-        # Navigazione VERTICALE (DOWN chiude)
-        current_state_y = (y_axis > self.axis_deadzone, hat[1], dpad_down)
-        
-        moved_down = (y_axis > self.axis_deadzone and not self._category_selector_last_y[0]) or \
-                    (hat[1] == -1 and self._category_selector_last_y[1] != -1) or \
-                    (dpad_down and not self._category_selector_last_y[2])
-        
-        if moved_down:
-            self.parent.sound_manager.navigate()
-            self._close_category_selector()
-            return
-        
-        self._category_selector_last_y = current_state_y
-        
-        # Pulsante B (chiude)
-        current_b_state = self.joystick.get_button(1)
-        
-        if current_b_state and not self._category_selector_last_b:
-            self.parent.sound_manager.back()
-            self._close_category_selector()
-            current_time = pygame.time.get_ticks()
-            self.button_cooldown[1] = current_time + 500
-            self._category_selector_last_b = True
-            return
-        
-        self._category_selector_last_b = current_b_state
-        
-        # Consuma altri pulsanti
-        for i in range(self.joystick.get_numbuttons()):
-            if self.joystick.get_button(i):
+        """ NUOVO: Gestisce input joystick nel category selector"""
+        try:
+            # Verifica che category_selector esista ancora
+            if not hasattr(self.parent, 'category_selector'):
+                print("⚠️ Category selector disappeared")
+                self.parent.is_in_category_selector = False
+                return
+            
+            # Navigazione ORIZZONTALE (LEFT/RIGHT cambia categoria)
+            x_axis = self.joystick.get_axis(0)
+            y_axis = self.joystick.get_axis(1)
+            hat = self.joystick.get_hat(0) if self.joystick.get_numhats() > 0 else (0, 0)
+            
+            dpad_left = self.joystick.get_button(13) if self.joystick.get_numbuttons() > 13 else False
+            dpad_right = self.joystick.get_button(14) if self.joystick.get_numbuttons() > 14 else False
+            dpad_down = self.joystick.get_button(12) if self.joystick.get_numbuttons() > 12 else False
+            
+            # Gestisce LEFT/RIGHT per cambiare categoria
+            current_state_x = (x_axis > self.axis_deadzone, x_axis < -self.axis_deadzone,
+                            hat[0], dpad_right, dpad_left)
+            
+            moved_right = (x_axis > self.axis_deadzone and not self._category_selector_last_x[0]) or \
+                        (hat[0] == 1 and self._category_selector_last_x[2] != 1) or \
+                        (dpad_right and not self._category_selector_last_x[3])
+            
+            moved_left = (x_axis < -self.axis_deadzone and not self._category_selector_last_x[1]) or \
+                        (hat[0] == -1 and self._category_selector_last_x[2] != -1) or \
+                        (dpad_left and not self._category_selector_last_x[4])
+            
+            if moved_right:
+                if hasattr(self.parent, 'sound_manager'):
+                    self.parent.sound_manager.navigate()
+                self.parent.category_selector.navigate_right()
+            elif moved_left:
+                if hasattr(self.parent, 'sound_manager'):
+                    self.parent.sound_manager.navigate()
+                self.parent.category_selector.navigate_left()
+            
+            self._category_selector_last_x = current_state_x
+            
+            # Navigazione VERTICALE (DOWN chiude)
+            current_state_y = (y_axis > self.axis_deadzone, hat[1], dpad_down)
+            
+            moved_down = (y_axis > self.axis_deadzone and not self._category_selector_last_y[0]) or \
+                        (hat[1] == -1 and self._category_selector_last_y[1] != -1) or \
+                        (dpad_down and not self._category_selector_last_y[2])
+            
+            if moved_down:
+                if hasattr(self.parent, 'sound_manager'):
+                    self.parent.sound_manager.navigate()
+                self._close_category_selector()
+                return
+            
+            self._category_selector_last_y = current_state_y
+            
+            # Pulsante B (chiude)
+            current_b_state = self.joystick.get_button(1) if self.joystick.get_numbuttons() > 1 else False
+            
+            if current_b_state and not self._category_selector_last_b:
+                if hasattr(self.parent, 'sound_manager'):
+                    self.parent.sound_manager.back()
+                self._close_category_selector()
                 current_time = pygame.time.get_ticks()
-                self.button_cooldown[i] = current_time + 400
+                self.button_cooldown[1] = current_time + 500
+                self._category_selector_last_b = True
+                return
+            
+            self._category_selector_last_b = current_b_state
+            
+            # Consuma altri pulsanti
+            for i in range(self.joystick.get_numbuttons()):
+                if self.joystick.get_button(i):
+                    current_time = pygame.time.get_ticks()
+                    self.button_cooldown[i] = current_time + 400
+                    
+        except Exception as e:
+            
+            print(f"⚠️ Error in category selector handler: {e}")
+            # Chiudi il selector se c'è un errore
+            try:
+                self._close_category_selector()
+            except:
+                self.parent.is_in_category_selector = False
 
     def _close_category_selector(self):
         """Chiude il category selector"""
@@ -706,7 +797,7 @@ class JoystickManager:
             True if dpad_up else False     # D-PAD UP
         )
         
-        # Forza anche lo stato per riaprire il category selector
+        #  Forza anche lo stato per riaprire il category selector
         self._category_open_last_y = (
             True if (y_axis < -self.axis_deadzone or dpad_up) else False,  # UP analogico
             hat[1] if hat[1] != 0 else 0,                                   # Hat Y
@@ -740,6 +831,47 @@ class JoystickManager:
             elif i == 10:  # L3 (PS4) - Reorder Mode
                 self._simulate_key(Qt.Key.Key_R)
     
+
+    def _handle_volume_control(self):
+        """Gestisce controllo volume con LT/L2 + D-Pad UP/DOWN"""
+        # Verifica che il volume manager esista
+        if not hasattr(self.parent, 'volume_manager') or not self.parent.volume_manager:
+            return False
+        
+        # Verifica che il launcher sia in focus
+        if not self.parent.volume_manager.is_launcher_focused():
+            return False
+        
+        # Leggi il trigger sinistro (LT)
+        try:
+            lt_axis = self.joystick.get_axis(2)  # Axis 2 per Linux
+        except:
+            return False
+        
+        # Trigger NON premuto (a riposo = -1.0)
+        if lt_axis < 0.0:
+            return False
+        
+        # Trigger PREMUTO: gestisci volume
+        try:
+            if self.joystick.get_numhats() > 0:
+                hat = self.joystick.get_hat(0)
+                
+                # D-Pad UP = volume su
+                if hat[1] == 1 and self._check_button_cooldown(9001, cooldown_ms=250):
+                    self.parent.volume_manager.increase_volume()
+                
+                # D-Pad DOWN = volume giù
+                elif hat[1] == -1 and self._check_button_cooldown(9002, cooldown_ms=250):
+                    self.parent.volume_manager.decrease_volume()
+        except Exception as e:
+            
+            print(f"⚠️ Volume control error (non-critical): {e}")
+            pass
+        
+        # Ritorna True per bloccare altri handler
+        return True
+
     def _check_button_cooldown(self, button_index, cooldown_ms=300):
         """Verifica e aggiorna il cooldown dei pulsanti"""
         current_time = pygame.time.get_ticks()
@@ -776,8 +908,7 @@ class JoystickManager:
         self.joystick = None
         
        
-        if hasattr(self.parent, 'volume_manager') and self.parent.volume_manager:
-            self.parent.volume_manager.set_joystick(None)
+        
         
         from modules.joystick_notification import show_joystick_disconnected
         self.joystick_notification = show_joystick_disconnected(

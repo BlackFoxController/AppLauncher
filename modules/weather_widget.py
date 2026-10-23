@@ -134,13 +134,13 @@ class WeatherFetcher(QThread):
                 'format': 'j1'  # JSON format
             }
             
-            
+            print(f"Fetching from wttr.in...")
             response = requests.get(url, params=params, timeout=10)
             
             if response.status_code == 200:
                 data = response.json()
                 
-                # Converti in formato standardizzato
+                
                 weather_data = self._parse_wttr(data)
                 
                 # Determina unità per il log
@@ -277,7 +277,7 @@ class WeatherWidget(QWidget):
         # Timer per aggiornamento automatico (ogni 30 minuti)
         self.update_timer = QTimer()
         self.update_timer.timeout.connect(self.fetch_weather)
-        self.update_timer.setInterval(30 * 60 * 1000)  # 30 minuti
+        self.update_timer.setInterval(30 * 60 * 1000)  
         
         # Timer per fetch ritardato (può essere fermato)
         self.delayed_fetch_timer = QTimer()
@@ -349,6 +349,7 @@ class WeatherWidget(QWidget):
         self._fade_anim.setEndValue(1.0)
         self._fade_anim.start()
         
+        
     def init_ui(self):
         """Inizializza l'interfaccia del widget"""
         layout = QVBoxLayout(self)
@@ -372,7 +373,7 @@ class WeatherWidget(QWidget):
         self.weather_icon = QLabel()
         self.weather_icon.setFixedSize(self.scaling.scale(64), self.scaling.scale(64))
         self.weather_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._set_weather_emoji("☁️")  # Default icon
+        self._set_weather_emoji("☁️")  
         
         # Nome città (sotto l'icona)
         self.city_label = QLabel(self.city.title())
@@ -503,6 +504,7 @@ class WeatherWidget(QWidget):
                 self.parent().repaint()
                 
         elif self.city and self._user_visible:
+            
             print(f"   No existing data, fetching weather...")
             # Usa il delayed timer per evitare fetch duplicati se setVisible/set_location
             # sono stati chiamati poco prima (si sovrascrive la schedulazione esistente)
@@ -543,7 +545,7 @@ class WeatherWidget(QWidget):
     def _update_weather_data(self, data):
         """Aggiorna i dati meteo dal JSON dell'API"""
         try:
-            
+            # Salva le coordinate per richieste future (se disponibili)
             if self.fetcher:
                 self.latitude = self.fetcher.latitude
                 self.longitude = self.fetcher.longitude
@@ -551,7 +553,7 @@ class WeatherWidget(QWidget):
             # Ottieni temperatura in Celsius dall'API
             temp_celsius = data.get('temp_celsius', data.get('temp', 0))
             
-            # Converti in base alle unità CORRENTI del widget
+            
             if self.units == 'imperial':
                 temp = round((temp_celsius * 9/5) + 32)
                 unit_symbol = "°F"
@@ -664,7 +666,7 @@ def add_weather_to_header(launcher, header_layout):
         launcher: Istanza di TVLauncher
         header_layout: QHBoxLayout dell'header
     """
-   
+    
     pass
 
 
@@ -675,7 +677,7 @@ def save_weather_config(launcher, city, country_code, units):
     La configurazione weather viene ora salvata direttamente in launcher_apps.json
     tramite launcher.save_config() chiamato da weather_settings.py
     
-   
+    Questa funzione rimane solo per retrocompatibilità ma NON fa più nulla.
     
     Args:
         launcher: Istanza di TVLauncher
@@ -684,6 +686,8 @@ def save_weather_config(launcher, city, country_code, units):
         units: Unità di misura (ignorato)
     """
     
+    # Il salvataggio viene gestito da weather_settings.py che chiama launcher.save_config()
+    # Non creare più il file weather_config.json per evitare conflitti
     pass
 
 
@@ -703,7 +707,7 @@ def force_launcher_refresh(launcher):
         launcher.weather_widget.update()
         launcher.weather_widget.repaint()
     
-    # Trova e aggiorna il centralWidget 
+    # Trova e aggiorna il centralWidget (che contiene l'header)
     try:
         central = launcher.centralWidget()
         if central:

@@ -1,7 +1,4 @@
-"""
-Key Remapper Module for TV Launcher - STYLED VERSION
-Matches the launcher's visual design
-"""
+
 
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, 
@@ -372,7 +369,7 @@ class KeyCaptureDialog(QDialog):
         instruction_layout = QVBoxLayout(instruction_box)
         instruction_layout.setSpacing(self.scaling.scale(15))
         
-        
+        # SALVA come self.instruction_label
         self.instruction_label = QLabel("⌨️ Press any key or button...")
         
         self.instruction_label.setStyleSheet(f"""
@@ -1153,7 +1150,6 @@ class KeyRemapperDialog(QDialog):
         self.save_btn = save_btn
         
         return footer
-    
     
     
     def _reset_current_profile(self):

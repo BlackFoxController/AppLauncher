@@ -2,9 +2,10 @@ import psutil
 from pathlib import Path
 
 
-_DEBUG_BATTERY = False
-_DEBUG_PERCENT  = 80      # percentuale da simulare
+_DEBUG_BATTERY  = False
+_DEBUG_PERCENT  = 80     # percentuale da simulare
 _DEBUG_CHARGING = False   # True = simula carica in corso
+
 
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel
 from PyQt6.QtCore import Qt, QTimer
@@ -62,8 +63,8 @@ class BatteryWidget(QWidget):
 
     def __init__(self, scaling, icon_dir="assets/icons", refresh_ms=60_000, parent=None):
         super().__init__(parent)
-        self.scaling   = scaling
-        self.icon_dir  = Path(icon_dir)
+        self.scaling    = scaling
+        self.icon_dir   = Path(icon_dir)
         self.refresh_ms = refresh_ms
 
         self._build_ui()
@@ -75,12 +76,12 @@ class BatteryWidget(QWidget):
         self._timer.timeout.connect(self._refresh)
         self._timer.start(self.refresh_ms)
 
-        # Timer veloce: controlla solo plug/unplug ogni 2 secondi
+        # Timer veloce: controlla solo plug/unplug ogni secondo
         self._plug_timer = QTimer(self)
         self._plug_timer.timeout.connect(self._check_plug_change)
         self._plug_timer.start(1_000)
 
-   
+    
 
     def _build_ui(self):
         layout = QHBoxLayout(self)
@@ -118,7 +119,7 @@ class BatteryWidget(QWidget):
             return
         current_charging = battery.power_plugged
         if self._last_charging is not None and current_charging != self._last_charging:
-            self._refresh()  # Aggiornamento immediato
+            self._refresh()
         self._last_charging = current_charging
 
     def _refresh(self):
@@ -143,7 +144,7 @@ class BatteryWidget(QWidget):
 
         icon_name = _pick_icon_name(percent, charging)
         icon_path = self.icon_dir / icon_name
-        size      = self.scaling.scale(33)
+        size      = self.scaling.scale(32)
 
         if icon_path.exists():
             pixmap = QPixmap(str(icon_path))
@@ -162,7 +163,7 @@ class BatteryWidget(QWidget):
         self._icon_label.setText(_pick_emoji(percent, charging))
         self._icon_label.setStyleSheet(
             f"background: transparent; border: none; "
-            f"font-size: {self.scaling.scale_font(20)}px;"
+            f"font-size: {self.scaling.scale_font(23)}px;"
         )
 
     def _update_label(self, percent: int, charging: bool):
@@ -174,7 +175,7 @@ class BatteryWidget(QWidget):
             f"font-size: {self.scaling.scale_font(23)}px; font-weight: bold; color: {color};"
         )
 
-   
+    
 
     def cleanup(self):
         """Ferma il timer. Chiamare prima della chiusura."""

@@ -18,40 +18,40 @@ from PyQt6.QtCore import (
 )
 from PyQt6.QtGui import QPixmap, QFont, QKeyEvent, QPainter, QColor, QIcon, QBrush
 import psutil
-from modules.app_reorder import integrate_reorder_mode
-from modules.search_widget import QuickSearchWidget
-from modules.joystick_notification import show_joystick_connected, show_joystick_disconnected
-from modules.program_scanner import ProgramScanner, ProgramScanDialog
-from modules.settings_menu import SettingsMenu
-from modules.window_manager import WindowManager
-from modules.mouse_touch_manager import integrate_mouse_touch
-from modules.sound_effects import SoundManager
-from modules.key_remapper import KeyMapper
-from modules.tile_effects import TileGlowEffect
-from modules.joystick_manager import JoystickManager
-from modules.volume_overlay import install_volume_control
-from modules.category_manager import (
+from modules_win.app_reorder import integrate_reorder_mode
+from modules_win.search_widget import QuickSearchWidget
+from modules_win.joystick_notification import show_joystick_connected, show_joystick_disconnected
+from modules_win.program_scanner import ProgramScanner, ProgramScanDialog
+from modules_win.settings_menu import SettingsMenu
+from modules_win.window_manager import WindowManager
+from modules_win.mouse_touch_manager import integrate_mouse_touch
+from modules_win.sound_effects import SoundManager
+from modules_win.key_remapper import KeyMapper
+from modules_win.tile_effects import TileGlowEffect
+from modules_win.joystick_manager import JoystickManager
+from modules_win.volume_overlay import install_volume_control
+from modules_win.category_manager import (
     integrate_categories, 
     add_category_navigation_to_keypressevent,
     add_category_to_edit_dialog,
     add_quick_category_shortcut,  
     add_category_joystick_support 
 )
-from modules.background_manager import BackgroundManager
-from modules.video_wallpaper_manager import VideoWallpaperManager
-from modules.update_notification import check_for_updates
-from modules.weather_widget import (
+from modules_win.background_manager import BackgroundManager
+from modules_win.video_wallpaper_manager import VideoWallpaperManager
+from modules_win.update_notification import check_for_updates
+from modules_win.weather_widget import (
     integrate_weather_widget, 
     add_weather_to_header,
     cleanup_weather_widget
 )
 
-from modules.responsive_scaling import ResponsiveScaling
-from modules.image_manager import ImageManager
-from modules.app_editor_dialog import EditAppDialog
-from modules.dialogs import ApiKeyDialog, SystemMenuDialog, AddAppDialog
-from modules.styles import Styles
-from modules.parental_control import integrate_parental_control
+from modules_win.responsive_scaling import ResponsiveScaling
+from modules_win.image_manager import ImageManager
+from modules_win.app_editor_dialog import EditAppDialog
+from modules_win.dialogs import ApiKeyDialog, SystemMenuDialog, AddAppDialog
+from modules_win.styles import Styles
+from modules_win.parental_control import integrate_parental_control
 
 if getattr(sys, 'frozen', False):
     BASE_DIR = Path(sys.executable).parent
@@ -348,7 +348,7 @@ class AppTile(QWidget):
             
             if glow_enabled:
                 if self.glow_effect is None:
-                    from modules.tile_effects import TileGlowEffect
+                    from modules_win.tile_effects import TileGlowEffect
                     self.glow_effect = TileGlowEffect(self, self.scaling)
                 self.glow_effect.start()
             
@@ -957,7 +957,7 @@ class TVLauncher(QMainWindow):
         if hasattr(self, 'weather_widget'):
             header_layout.addWidget(self.weather_widget)
 
-        from modules.battery_widget import BatteryWidget
+        from modules_win.battery_widget import BatteryWidget
         _show_battery = BatteryWidget.battery_available()
 
         pill_widget = QWidget()

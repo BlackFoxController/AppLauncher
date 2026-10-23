@@ -7,24 +7,17 @@ from PyQt6.QtGui import QPixmap, QBrush
 
 
 class BackgroundManager:
-    """Gestisce background, animazioni e auto-change wallpaper"""
+    """Gestisce background, animazioni e auto-change wallpaper per Linux"""
     
     def __init__(self, parent, config_data, assets_dir):
-        """
-        Inizializza il Background Manager
         
-        Args:
-            parent: La finestra principale (TVLauncher)
-            config_data: Dict con configurazione (background, auto_change_wallpaper)
-            assets_dir: Path alla cartella assets
-        """
         self.parent = parent
         self.assets_dir = Path(assets_dir)
         
         # Configurazione
         self.background_image = config_data.get('background', '')
         self.auto_change_wallpaper = config_data.get('auto_change_wallpaper', False)
-        self.wallpaper_interval = 300000  # 3 minuti default (in millisecondi)
+        self.wallpaper_interval = 300000  # 5 minuti default (in millisecondi)
         
         # Cartella wallpapers
         self.wallpaper_folder = self.assets_dir / 'wallpapers'
@@ -37,6 +30,7 @@ class BackgroundManager:
         
         # Timer per auto-change
         self.wallpaper_timer = None
+        self.overlay = None
         
     def initialize(self, overlay=None):
         """
@@ -256,7 +250,6 @@ class BackgroundManager:
             if self.auto_change_wallpaper:
                 self.auto_change_wallpaper = False
                 self.stop_wallpaper_rotation()
-                
             
             self.update_background(fade=True)
             return True
@@ -275,14 +268,12 @@ class BackgroundManager:
         self.wallpaper_timer = QTimer()
         self.wallpaper_timer.timeout.connect(self.change_random_wallpaper)
         self.wallpaper_timer.start(self.wallpaper_interval)
-        
     
     def stop_wallpaper_rotation(self):
         """Ferma il timer per il cambio automatico dello sfondo"""
         if self.wallpaper_timer:
             self.wallpaper_timer.stop()
             self.wallpaper_timer = None
-            
     
     def change_random_wallpaper(self):
         """Cambia lo sfondo con uno casuale dalla cartella"""
@@ -311,7 +302,6 @@ class BackgroundManager:
         # Imposta lo sfondo con fade
         self.background_image = str(random_wallpaper)
         self.update_background(fade=True)
-        
     
     def toggle_wallpaper_rotation(self, enabled):
         """
@@ -365,7 +355,7 @@ class BackgroundManager:
         """
         self.background_image = config_data.get('background', '')
         self.auto_change_wallpaper = config_data.get('auto_change_wallpaper', False)
-        self.wallpaper_interval = config_data.get('wallpaper_interval', 180000)
+        self.wallpaper_interval = config_data.get('wallpaper_interval', 300000)
     
     # ==================== CLEANUP ====================
     
@@ -381,57 +371,3 @@ class BackgroundManager:
         if self.fade_widget:
             self.fade_widget.deleteLater()
             self.fade_widget = None
-
-
-# ==================== FUNZIONI DI INTEGRAZIONE ====================
-
-def integrate_background_manager(launcher_class):
-    """
-    Integra il BackgroundManager nella classe TVLauncher
-    
-    Args:
-        launcher_class: La classe TVLauncher da modificare
-    """
-    
-    # Salva __init__ originale
-    original_init = launcher_class.__init__
-    
-    def new_init(self):
-        """Nuovo __init__ con BackgroundManager"""
-        # Chiama init originale
-        original_init(self)
-        
-        # Inizializza BackgroundManager
-        from modules.background_manager import BackgroundManager
-        self.background_manager = BackgroundManager(
-            parent=self,
-            config_data=self.config_data,
-            assets_dir=self.assets_dir
-        )
-        
-        # Inizializza background (chiamare dopo aver creato overlay)
-        # self.background_manager.initialize(overlay=self.overlay)
-    
-    # Sostituisci metodi
-    launcher_class.__init__ = new_init
-    launcher_class.set_background = lambda self: self.background_manager.set_background_from_dialog()
-    launcher_class.update_background = lambda self, fade=False: self.background_manager.update_background(fade)
-    launcher_class.start_wallpaper_rotation = lambda self: self.background_manager.start_wallpaper_rotation()
-    launcher_class.stop_wallpaper_rotation = lambda self: self.background_manager.stop_wallpaper_rotation()
-    launcher_class.change_random_wallpaper = lambda self: self.background_manager.change_random_wallpaper()
-    launcher_class.toggle_wallpaper_rotation = lambda self, enabled: self.background_manager.toggle_wallpaper_rotation(enabled)
-    
-    # Aggiungi cleanup
-    original_close = launcher_class.closeEvent if hasattr(launcher_class, 'closeEvent') else None
-    
-    def new_close_event(self, event):
-        """Cleanup prima di chiudere"""
-        if hasattr(self, 'background_manager'):
-            self.background_manager.cleanup()
-        
-        if original_close:
-            original_close(self, event)
-        else:
-            event.accept()
-    
-    launcher_class.closeEvent = new_close_event

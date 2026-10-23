@@ -10,7 +10,7 @@ class ResponsiveScaling:
     """Resolution based responsive scaling"""
    
     def __init__(self):
-        # Risoluzione di riferimento 
+        
         self.BASE_WIDTH = 1920
         self.BASE_HEIGHT = 1080
        
@@ -31,7 +31,7 @@ class ResponsiveScaling:
         width_scale = physical_width / self.BASE_WIDTH
         height_scale = physical_height / self.BASE_HEIGHT
        
-        
+        # Usa il minore dei due per mantenere l'aspect ratio
         self.scale_factor = min(width_scale, height_scale)
        
         print(f"📐 Screen: {self.screen_width}x{self.screen_height} (logical)")
