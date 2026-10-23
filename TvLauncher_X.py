@@ -25,14 +25,18 @@ import psutil
 IS_LINUX = platform.system() == "Linux"
 IS_WINDOWS = platform.system() == "Windows"
 
+# XPlatform
+from modules.search_widget import QuickSearchWidget
+from modules.mouse_touch_manager import integrate_mouse_touch
+
 if(IS_WINDOWS):
     from modules_win.app_reorder import integrate_reorder_mode
-    from modules_win.search_widget import QuickSearchWidget
+    # from modules_win.search_widget import QuickSearchWidget
     from modules_win.joystick_notification import show_joystick_connected, show_joystick_disconnected
     from modules_win.program_scanner import ProgramScanner, ProgramScanDialog
     from modules_win.settings_menu import SettingsMenu
     from modules_win.window_manager import WindowManager
-    from modules_win.mouse_touch_manager import integrate_mouse_touch
+    # from modules_win.mouse_touch_manager import integrate_mouse_touch
     from modules_win.sound_effects import SoundManager
     from modules_win.key_remapper import KeyMapper
     from modules_win.tile_effects import TileGlowEffect
@@ -63,11 +67,11 @@ if(IS_WINDOWS):
     from modules_win.parental_control import integrate_parental_control
 else:
     from modules.app_reorder import integrate_reorder_mode
-    from modules.search_widget import QuickSearchWidget
+    # from modules.search_widget import QuickSearchWidget
     from modules.program_scanner import ProgramScanner, ProgramScanDialog
     from modules.settings_menu import SettingsMenu
     from modules.window_manager import WindowManager
-    from modules.mouse_touch_manager import integrate_mouse_touch
+    # from modules.mouse_touch_manager import integrate_mouse_touch
     from modules.sound_effects import SoundManager
     from modules.key_remapper import KeyMapper
     from modules.tile_effects import TileGlowEffect
@@ -2047,12 +2051,6 @@ class TVLauncher(QMainWindow):
             self.process_check_timer = QTimer()
             self.process_check_timer.timeout.connect(self.check_launched_process)
             self.process_check_timer.start(1000)
-            if IS_LINUX:
-                if self.focus_check_timer:
-                    self.focus_check_timer.stop()
-                self.focus_check_timer = QTimer()
-                self.focus_check_timer.timeout.connect(self.check_window_focus)
-                self.focus_check_timer.start(500)
             print(f"✅ App launched successfully with clean environment")
         except Exception as e:
             print(f"❌ Launch error: {e}")
@@ -2089,7 +2087,7 @@ class TVLauncher(QMainWindow):
         except Exception as e:
             print(f"   ❌ Error reading .desktop file: {e}")
         return None
-    
+
     def on_settings_closed(self):
         self.config_data = self.load_config()
         self.background_manager.load_config(self.config_data)
