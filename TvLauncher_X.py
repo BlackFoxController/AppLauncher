@@ -31,7 +31,6 @@ from modules.mouse_touch_manager import integrate_mouse_touch
 
 if(IS_WINDOWS):
     from modules_win.app_reorder import integrate_reorder_mode
-    # from modules_win.search_widget import QuickSearchWidget
     from modules_win.joystick_notification import show_joystick_connected, show_joystick_disconnected
     from modules_win.program_scanner import ProgramScanner, ProgramScanDialog
     from modules_win.settings_menu import SettingsMenu
@@ -67,7 +66,6 @@ if(IS_WINDOWS):
     from modules_win.parental_control import integrate_parental_control
 else:
     from modules.app_reorder import integrate_reorder_mode
-    # from modules.search_widget import QuickSearchWidget
     from modules.program_scanner import ProgramScanner, ProgramScanDialog
     from modules.settings_menu import SettingsMenu
     from modules.window_manager import WindowManager
